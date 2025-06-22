@@ -1,21 +1,42 @@
 WITH start_users AS (
   SELECT 
     level, 
-    COUNT(DISTINCT user_pseudo_id) as start_user,
-    COUNT(DISTINCT CASE WHEN revive > 0 THEN user_pseudo_id END) as start_user_revive, 
-    COUNT(DISTINCT CASE WHEN booster_use > 0 THEN user_pseudo_id END) as start_user_booster, 
-    COUNT(DISTINCT CASE WHEN revive > 0 and booster_use > 0 THEN user_pseudo_id END) as start_user_revive_booster, 
-    
+    COUNT(DISTINCT user_pseudo_id) as start_user_general,
+    COUNT(user_pseudo_id) as start_event_general,
 
+    COUNT(DISTINCT CASE WHEN revive = 0  THEN user_pseudo_id END) as start_user_not_revive,
+    COUNT(CASE WHEN revive = 0  THEN user_pseudo_id END) as start_event_not_revive,
+    COUNT(DISTINCT CASE WHEN booster_use = 0  THEN user_pseudo_id END) as start_user_not_booster,
+    COUNT(CASE WHEN booster_use = 0  THEN user_pseudo_id END) as start_event_not_booster,
+    COUNT(DISTINCT CASE WHEN booster_use = 0  and revive = 0 THEN user_pseudo_id END) as start_user_not_resource,
+    COUNT(CASE WHEN booster_use = 0  and revive = 0 THEN user_pseudo_id END) as start_event_not_resource,
 
-    COUNT(DISTINCT CASE WHEN win_at_attempt = 1 THEN user_pseudo_id END) as num_win_user_att1,
-    COUNT(DISTINCT CASE WHEN win_at_attempt = 2 THEN user_pseudo_id END) as num_win_user_att2,
-    COUNT(DISTINCT CASE WHEN win_at_attempt = 1 and revive > 0 and booster_use = 0 THEN user_pseudo_id END) as num_win_user_att1_revive,
-    COUNT(DISTINCT CASE WHEN win_at_attempt = 2 and revive > 0 and booster_use = 0 THEN user_pseudo_id END) as num_win_user_att2_revive,
-    COUNT(DISTINCT CASE WHEN win_at_attempt = 1 and revive = 0 and booster_use > 0 THEN user_pseudo_id END) as num_win_user_att1_booster,
-    COUNT(DISTINCT CASE WHEN win_at_attempt = 2 and revive = 0 and booster_use > 0 THEN user_pseudo_id END) as num_win_user_att2_booster,
-    COUNT(DISTINCT CASE WHEN win_at_attempt = 1 and revive > 0 and booster_use > 0 THEN user_pseudo_id END) as num_win_user_att1_revive_booster,
-    COUNT(DISTINCT CASE WHEN win_at_attempt = 2 and revive > 0 and booster_use > 0 THEN user_pseudo_id END) as num_win_user_att2_revive_booster
+    COUNT(DISTINCT CASE WHEN revive > 0 and booster_use = 0 THEN user_pseudo_id END) as start_user_revive,
+    COUNT(CASE WHEN revive > 0 and booster_use = 0 THEN user_pseudo_id END) as start_event_revive,
+    COUNT(DISTINCT CASE WHEN booster_use > 0 and revive = 0 THEN user_pseudo_id END) as start_user_booster,
+    COUNT(CASE WHEN booster_use > 0 and revive = 0 THEN user_pseudo_id END) as start_event_booster,
+    COUNT(DISTINCT CASE WHEN revive > 0 and booster_use > 0 THEN user_pseudo_id END) as start_user_revive_booster,
+    COUNT(CASE WHEN revive > 0 and booster_use > 0 THEN user_pseudo_id END) as start_event_revive_booster,
+
+    COUNT(DISTINCT CASE WHEN attempt_times = 1 THEN user_pseudo_id END) as start_user_att1,
+    COUNT(CASE WHEN attempt_times = 1 THEN user_pseudo_id END) as start_event_att1,
+    COUNT(DISTINCT CASE WHEN attempt_times = 2 THEN user_pseudo_id END) as start_user_att2,
+    COUNT(CASE WHEN attempt_times = 2 THEN user_pseudo_id END) as start_event_att2,
+
+    COUNT(DISTINCT CASE WHEN attempt_times = 1 and revive > 0 and booster_use = 0 THEN user_pseudo_id END) as start_user_att1_revive,
+    COUNT(CASE WHEN attempt_times = 1 and revive > 0 and booster_use = 0 THEN user_pseudo_id END) as start_event_att1_revive,
+    COUNT(DISTINCT CASE WHEN attempt_times = 2 and revive > 0 and booster_use = 0 THEN user_pseudo_id END) as start_user_att2_revive,
+    COUNT(CASE WHEN attempt_times = 2 and revive > 0 and booster_use = 0 THEN user_pseudo_id END) as start_event_att2_revive,
+
+    COUNT(DISTINCT CASE WHEN attempt_times = 1 and revive = 0 and booster_use > 0 THEN user_pseudo_id END) as start_user_att1_booster,
+    COUNT(CASE WHEN attempt_times = 1 and revive = 0 and booster_use > 0 THEN user_pseudo_id END) as start_event_att1_booster,
+    COUNT(DISTINCT CASE WHEN attempt_times = 2 and revive = 0 and booster_use > 0 THEN user_pseudo_id END) as start_user_att2_booster,
+    COUNT(CASE WHEN attempt_times = 2 and revive = 0 and booster_use > 0 THEN user_pseudo_id END) as start_event_att2_booster,
+
+    COUNT(DISTINCT CASE WHEN attempt_times = 1 and revive > 0 and booster_use > 0 THEN user_pseudo_id END) as start_user_att1_revive_booster,
+    COUNT(CASE WHEN attempt_times = 1 and revive > 0 and booster_use > 0 THEN user_pseudo_id END) as start_event_att1_revive_booster,
+    COUNT(DISTINCT CASE WHEN attempt_times = 2 and revive > 0 and booster_use > 0 THEN user_pseudo_id END) as start_user_att2_revive_booster,
+    COUNT(CASE WHEN attempt_times = 2 and revive > 0 and booster_use > 0 THEN user_pseudo_id END) as start_event_att2_revive_booster,
   FROM `crazy-coffee-jam.dashboard_table.level_data`
   WHERE event_date >= '2025-06-17' 
     AND version = '1.0.18' 
@@ -128,7 +149,50 @@ win_stats AS (
 
 SELECT
   s.level,
-  s.start_user,
+  s.start_user_general,
+  s.start_event_general,
+
+  s.start_user_not_revive,
+  s.start_event_not_revive,
+
+  s.start_user_not_booster,
+  s.start_event_not_booster,
+
+  s.start_user_not_resource,
+  s.start_event_not_resource,
+
+  s.start_user_revive,
+  s.start_event_revive,
+
+  s.start_user_booster,
+  s.start_event_booster,
+
+  s.start_user_revive_booster,
+  s.start_event_revive_booster,
+
+  s.start_user_att1,
+  s.start_event_att1,
+
+  s.start_user_att2,
+  s.start_event_att2,
+
+  s.start_user_att1_revive,
+  s.start_event_att1_revive,
+
+  s.start_user_att2_revive,
+  s.start_event_att2_revive,
+
+  s.start_user_att1_booster,
+  s.start_event_att1_booster,
+
+  s.start_user_att2_booster,
+  s.start_event_att2_booster,
+
+  s.start_user_att1_revive_booster,
+  s.start_event_att1_revive_booster,
+  
+  s.start_user_att2_revive_booster,
+  s.start_event_att2_revive_booster,
   w.win_user,
   COALESCE(w.num_booster,0) as num_booster,
   COALESCE(w.num_revive,0) as num_revive,
